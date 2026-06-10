@@ -1,4 +1,4 @@
-**# Project: GDP Estimation and Forecasting Analytics (Base Year 2022–23)**
+## Project: GDP Estimation and Forecasting Analytics (Base Year 2022–23)**
 
 This project demonstrates how to build an end-to-end GDP Analytics Pipeline using SQL, Python, Machine Learning, and Power BI/Tableau.
 
