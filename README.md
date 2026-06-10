@@ -1,12 +1,12 @@
-## Project: GDP Estimation and Forecasting Analytics (Base Year 2022–23)**
+## Project: GDP Estimation and Forecasting Analytics (Base Year 2022–23)
 
 This project demonstrates how to build an end-to-end GDP Analytics Pipeline using SQL, Python, Machine Learning, and Power BI/Tableau.
 
-**# SQL Queries for GDP Data Extraction from Major Data Sources**
+## SQL Queries for GDP Data Extraction from Major Data Sources
 
-**# 1. National Accounts Statistics (NAS)**
+## 1. National Accounts Statistics (NAS)
 
-**# sql**
+## sql
 
 SELECT
     year,
@@ -20,7 +20,7 @@ SELECT
 FROM nas_gdp_statistics
 WHERE year >= '2022-23';
 
-# 2. GST Aggregated Data
+## 2. GST Aggregated Data
 
 SELECT
     filing_period,
@@ -35,7 +35,7 @@ GROUP BY
     state_code,
     industry_code;
 
-# 3. Household Consumption/Expenditure Survey Data (HCES)
+## 3. Household Consumption/Expenditure Survey Data (HCES)
 
 SELECT
     survey_year,
@@ -51,7 +51,7 @@ GROUP BY
     sector,
     expenditure_category;
 
-# 4. Annual Survey of Industries (ASI)
+## 4. Annual Survey of Industries (ASI)
 
 SELECT
     survey_year,
@@ -67,7 +67,7 @@ GROUP BY
     state_code,
     nic_code;
 
-5. MCA-21 Corporate Financial Data
+## 5. MCA-21 Corporate Financial Data
 
 SELECT
     financial_year,
@@ -81,7 +81,7 @@ SELECT
 FROM mca21_financials
 WHERE financial_year >= '2022-23';
 
-# 6. Periodic Labour Force Survey (PLFS)
+## 6. Periodic Labour Force Survey (PLFS)
 
 SELECT
     survey_year,
@@ -95,7 +95,7 @@ SELECT
 FROM plfs_employment_statistics
 WHERE survey_year >= 2022;
 
-7. Index of Industrial Production (IIP)
+## 7. Index of Industrial Production (IIP)
 
 SELECT
     reference_month,
@@ -106,7 +106,7 @@ SELECT
 FROM iip_statistics
 WHERE reference_month >= '2022-04';
 
-# 8. Consumer Price Index (CPI)
+## 8. Consumer Price Index (CPI)
 
 SELECT
     reference_month,
@@ -117,7 +117,7 @@ SELECT
 FROM cpi_statistics
 WHERE reference_month >= '2022-04';
 
-# 9. Wholesale Price Index (WPI)
+## 9. Wholesale Price Index (WPI)
 
 SELECT
     reference_month,
@@ -127,7 +127,7 @@ SELECT
 FROM wpi_statistics
 WHERE reference_month >= '2022-04';
 
-# 10. External Trade Data (Exports and Imports)
+## 10. External Trade Data (Exports and Imports)
 
 SELECT
     trade_month,
@@ -142,7 +142,7 @@ GROUP BY
     commodity_code,
     country_code;
     
-# 11. Government Expenditure Data
+## 11. Government Expenditure Data
 
 SELECT
     financial_year,
@@ -157,7 +157,7 @@ GROUP BY
     ministry_name,
     expenditure_type;
 
-# 12. Supply and Use Tables (SUT)
+## 12. Supply and Use Tables (SUT)
 
 SELECT
     reference_year,
@@ -172,7 +172,7 @@ SELECT
 FROM supply_use_tables
 WHERE reference_year >= '2022-23';
 
-# 13. Final Consolidated GDP Dataset
+## 13. Final Consolidated GDP Dataset
 
 SELECT
     nas.year,
@@ -209,7 +209,7 @@ LEFT JOIN external_trade_statistics trade
 LEFT JOIN government_expenditure govt
     ON nas.year = govt.financial_year;
 
-# Data Extraction
+## Data Extraction
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -232,16 +232,16 @@ macro = pd.read_sql(
     engine
 )
 
-# Data Cleaning
+## Data Cleaning
 
-# Missing Value Analysis
+## Missing Value Analysis
 
 datasets = [nas, gst, household, macro]
 
 for df in datasets:
     print(df.isnull().sum())
 
-# Imputation
+## Imputation
 
 nas['gva_constant_price'].fillna(
     nas['gva_constant_price'].median(),
@@ -250,7 +250,7 @@ nas['gva_constant_price'].fillna(
 
 macro.fillna(method='ffill', inplace=True)
 
-# Duplicate Removal
+## Duplicate Removal
 
 gst.drop_duplicates(inplace=True)
 
@@ -259,9 +259,9 @@ household.drop_duplicates(
     inplace=True
 )
 
-# Statistical Validation
+## Statistical Validation
 
-# Z-Score Based Outlier Detection
+## Z-Score Based Outlier Detection
 
 from scipy.stats import zscore
 import numpy as np
@@ -274,7 +274,7 @@ outliers = nas[nas['zscore'] > 3]
 
 print(outliers.head())
 
-# IQR Method
+## IQR Method
 
 Q1 = gst['taxable_value'].quantile(0.25)
 Q3 = gst['taxable_value'].quantile(0.75)
@@ -286,9 +286,9 @@ gst_clean = gst[
     (gst['taxable_value'] <= Q3 + 1.5*IQR)
 ]
 
-# Cross-Source Reconciliation
+## Cross-Source Reconciliation
 
-# GST vs National Accounts
+## GST vs National Accounts
 
 gst_sector = gst_clean.groupby(
     ['sector','filing_month']
@@ -298,7 +298,7 @@ nas_sector = nas.groupby(
     ['sector','quarter']
 )['gva_constant_price'].sum().reset_index()
 
-# Correlation Check
+## Correlation Check
 
 merged = pd.merge(
     gst_sector,
@@ -308,7 +308,7 @@ merged = pd.merge(
 
 merged.corr(numeric_only=True)
 
-# Consistency Ratio
+## Consistency Ratio
 
 merged['consistency_ratio'] = (
     merged['taxable_value'] /
@@ -317,7 +317,7 @@ merged['consistency_ratio'] = (
 
 merged.head()
 
-# Feature Engineering
+## Feature Engineering
 
 macro['lag_1'] = macro['iip_index'].shift(1)
 
@@ -335,14 +335,14 @@ macro['rolling_std'] = (
     .std()
 )
 
-# GDP Growth Rate
+## GDP Growth Rate
 
 nas['gdp_growth'] = (
     nas['gva_constant_price']
     .pct_change() * 100
 )
 
-# Inflation Adjustment
+## Inflation Adjustment
 
 nas = nas.merge(
     macro[['date','cpi']],
@@ -355,7 +355,7 @@ nas['real_gdp'] = (
     nas['cpi']
 ) * 100
 
-# Time Series Forecasting (ARIMA)
+## Time Series Forecasting (ARIMA)
 
 from statsmodels.tsa.arima.model import ARIMA
 
@@ -374,9 +374,9 @@ forecast = result.forecast(steps=4)
 
 print(forecast)
 
-# Machine Learning Forecasting
+## Machine Learning Forecasting
 
-# Prepare Dataset
+## Prepare Dataset
 
 features = [
     'iip_index',
@@ -394,7 +394,7 @@ y = nas['gva_constant_price'][
     X.index
 ]
 
-# Train-Test Split
+## Train-Test Split
 
 from sklearn.model_selection import train_test_split
 
@@ -405,7 +405,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     shuffle=False
 )
 
-# Random Forest Model
+## Random Forest Model
 
 from sklearn.ensemble import RandomForestRegressor
 
@@ -418,7 +418,7 @@ rf.fit(X_train, y_train)
 
 pred = rf.predict(X_test)
 
-# XGBoost Model
+## XGBoost Model
 
 from xgboost import XGBRegressor
 
@@ -432,9 +432,9 @@ xgb.fit(X_train, y_train)
 
 xgb_pred = xgb.predict(X_test)
 
-# Model Evaluation
+## Model Evaluation
 
-# RMSE
+## RMSE
 
 from sklearn.metrics import (
     mean_squared_error,
@@ -449,7 +449,7 @@ rmse = mean_squared_error(
 
 print("RMSE:", rmse)
 
-# MAPE
+## MAPE
 
 mape = mean_absolute_percentage_error(
     y_test,
@@ -458,7 +458,7 @@ mape = mean_absolute_percentage_error(
 
 print("MAPE:", mape)
 
-# Accuracy Improvement
+## Accuracy Improvement
 
 baseline_rmse = 2200
 new_rmse = 1650
@@ -473,11 +473,11 @@ print(
     f"{improvement:.2f}%"
 )
 
-# OUTPUT
+## OUTPUT
 
 RMSE Reduced by 25.00%
 
-# Feature Importance
+## Feature Importance
 
 importance = pd.DataFrame({
     'Feature': features,
@@ -493,7 +493,7 @@ importance.sort_values(
 
 print(importance)
 
-# Expected Drivers:
+## Expected Drivers:
 
 1. IIP Index
 2. GST Collections
@@ -501,9 +501,9 @@ print(importance)
 4. Exports
 5. Imports
 
-# Dashboard KPIs (Power BI/Tableau)
+## Dashboard KPIs (Power BI/Tableau)
 
-# Sector-wise GDP Contribution
+## Sector-wise GDP Contribution
 
 SELECT
     sector,
@@ -511,7 +511,7 @@ SELECT
 FROM national_accounts
 GROUP BY sector;
 
-# State-wise GDP
+## State-wise GDP
 
 SELECT
     state,
@@ -519,7 +519,7 @@ SELECT
 FROM state_gdp
 GROUP BY state;
 
-# GDP Growth Trend
+## GDP Growth Trend
 
 SELECT
     year,
@@ -528,7 +528,7 @@ FROM national_accounts
 GROUP BY year
 ORDER BY year;
 
-# Dashboard Visuals
+## Dashboard Visuals
 
 1. Executive Dashboard
 2. Total GDP
@@ -549,7 +549,7 @@ ORDER BY year;
 1. Actual vs Predicted GDP
 2. Forecast Confidence Interval
 
-# Project Outcome
+## Project Outcome
 
 | Metric                      | Achievement                                 |
 | --------------------------- | ------------------------------------------- |
@@ -561,9 +561,9 @@ ORDER BY year;
 | Dashboard Delivery          | Power BI/Tableau                            |
 | Business Impact             | Reliable GDP estimation and policy insights |
 
-# Resume Project Description
+## Resume Project Description
 
-# GDP Estimation and Forecasting Analytics (Base Year 2022–23)
+## GDP Estimation and Forecasting Analytics (Base Year 2022–23)
 
 1. Consolidated National Accounts, GST, household microdata, and macroeconomic indicators to develop an end-to-end GDP estimation framework.
 
@@ -573,3 +573,4 @@ ORDER BY year;
 
 4. Developed interactive Power BI/Tableau dashboards delivering sectoral, regional, and trend-based GDP insights for data-driven policymaking.
 
+                                           *****
